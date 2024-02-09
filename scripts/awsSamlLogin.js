@@ -2,7 +2,8 @@
 // @name         go/aws auto-login
 // @namespace    https://www.robenheimer.dev
 // @downloadURL  https://raw.githubusercontent.com/rbedger/tampermonkey/main/scripts/awsSamlLogin.js
-// @version      2024-02-09
+// @updateURL    https://raw.githubusercontent.com/rbedger/tampermonkey/main/scripts/awsSamlLogin.js
+// @version      2024-02-09-443
 // @description  auto-populate the most frequently-used aws account.  optionally, auto-proceed with log in
 // @author       robenheimer
 // @match        https://signin.aws.amazon.com/saml
@@ -29,7 +30,7 @@ $('[id].saml-account')
   .after(
     $(`
       <div style="display:inline-block">
-        <input class=autologin type=checkbox checked=${ls.autoLogin} />
+        <input class=autologin type=checkbox defaultchecked=${ls.autoLogin} ${ls.autoLogin ? 'checked' : ''} />
         <label>auto?</label>
       </div>
     `).on('click', (e) => {
