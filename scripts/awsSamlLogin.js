@@ -1,59 +1,51 @@
 // ==UserScript==
-// @name         login upon select
+// @name         go/aws auto-login
 // @namespace    https://www.robenheimer.dev
-// @version      2024-02-07
-// @description  log in to aws saml after selecting account
+// @downloadURL  https://raw.githubusercontent.com/rbedger/tampermonkey/main/scripts/awsSamlLogin.js
+// @version      2024-02-09
+// @description  auto-populate the most frequently-used aws account.  optionally, auto-proceed with log in
 // @author       robenheimer
 // @match        https://signin.aws.amazon.com/saml
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=amazon.com
 // @require      https://signin.aws.amazon.com/static/js/jquery.min.js
+// @require      https://raw.githubusercontent.com/rbedger/tampermonkey/main/scripts/util.js
 // @grant        GM_getValue
 // @grant        GM_setValue
 // ==/UserScript==
 
-class LS {
-  constructor(localStorage, ...keys) {
-    keys.forEach(k => {
-      Object.defineProperty(this, k, {
-        get: () => GM_getValue(k),
-        set: (v) => GM_setValue(k, v)
-      });
-    });
-
-    Object.freeze(this);
-  }
-}
-
-const ls = new LS(
-  GM_getValue,
-  GM_setValue,
+const $ = window.jQuery;
+const ls = new WellDefinedStorage(
+  {
+    get: GM_getValue,
+    set: GM_setValue,
+  },
   'defaultAccount',
   'autoLogin'
 );
 
-jQuery('[id].saml-account')
+
+$('[id].saml-account')
   .css('display', 'inline-block')
   .after(
-    jQuery(`
+    $(`
       <div style="display:inline-block">
         <input class=autologin type=checkbox checked=${ls.autoLogin} />
         <label>auto?</label>
       </div>
     `).on('click', (e) => {
-      const newVal = jQuery(e.currentTarget).find('input').prop('checked');
+      const newVal = $(e.currentTarget).find('input').prop('checked');
 
-      jQuery('.autologin').prop('checked', newVal);
+      $('.autologin').prop('checked', newVal);
       ls.autoLogin = newVal;
     }));
 
-jQuery('.saml-radio')
+$('.saml-radio')
   .on('change', e => {
     ls.defaultAccount = e.currentTarget.value;
 
     if (ls.autoLogin) {
-      console.log(e);
-      jQuery("#saml_form").submit();
+      $("#saml_form").submit();
     }
   });
 
-jQuery(`[id="${ls.defaultAccount}"]`).click();
+$(`[id="${ls.defaultAccount}"]`).click();
